@@ -677,7 +677,7 @@
 
     <div class="pc-side-panel pc-panel-left destructible">
         <div>[TELEMETRÍA]</div>
-        <div>SYS_MEM: 0xFA80</div>
+        <div>SYS_MEM: <span id="sys-metric">0x----</span></div>
         <div>ALLOC: STABLE</div>
         <div>CANONICAL_INDEX: 0.89</div>
         <div style="margin-top: 10px;">[FREQ_GRAPH]</div>
@@ -1831,6 +1831,27 @@
                 vz.style.display = 'none';
             }
         }
+        function _initUniqueVisits() {
+            // Namespace único para tu web en counterapi
+            const ns = "saphyniel-sanctus-codex";
+            const key = "unique_nodes";
+            
+            fetch(`https://api.counterapi.dev/v1/${ns}/${key}/up`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data && typeof data.count === 'number') {
+                        // Muestra el número camuflado como hexadecimal (ej: 42 visitas -> 0x002A)
+                        const hexVal = data.count.toString(16).toUpperCase().padStart(4, '0');
+                        const el = document.getElementById('sys-metric');
+                        if (el) el.textContent = `0x${hexVal}`;
+                    }
+                })
+                .catch(() => {
+                    const el = document.getElementById('sys-metric');
+                    if (el) el.textContent = "0xFA80";
+                });
+        }
+        _initUniqueVisits();
     </script>
 </body>
 </html>
