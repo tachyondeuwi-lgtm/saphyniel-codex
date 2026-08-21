@@ -1832,23 +1832,28 @@
             }
         }
         function _initUniqueVisits() {
-            // Namespace único para tu web en counterapi
-            const ns = "saphyniel-sanctus-codex";
-            const key = "unique_nodes";
-            
-            fetch(`https://api.counterapi.dev/v1/${ns}/${key}/up`)
+            const namespace = "saphyniel-codex";
+            const key = "visits";
+            const el = document.getElementById('sys-metric');
+
+            // Si ya entraste en esta pestaña/sesión, solo lee el número sin aumentarlo
+            const alreadyVisited = sessionStorage.getItem('codex_counted');
+            const endpoint = alreadyVisited 
+                ? `https://abacus.jasoncameron.dev/get/${namespace}/${key}`
+                : `https://abacus.jasoncameron.dev/hit/${namespace}/${key}`;
+
+            fetch(endpoint)
                 .then(r => r.json())
                 .then(data => {
-                    if (data && typeof data.count === 'number') {
-                        // Muestra el número camuflado como hexadecimal (ej: 42 visitas -> 0x002A)
-                        const hexVal = data.count.toString(16).toUpperCase().padStart(4, '0');
-                        const el = document.getElementById('sys-metric');
+                    if (data && typeof data.value === 'number') {
+                        if (!alreadyVisited) sessionStorage.setItem('codex_counted', 'true');
+                        // Muestra el conteo en formato hexadecimal (ej: 10 visitas -> 0x000A)
+                        const hexVal = data.value.toString(16).toUpperCase().padStart(4, '0');
                         if (el) el.textContent = `0x${hexVal}`;
                     }
                 })
                 .catch(() => {
-                    const el = document.getElementById('sys-metric');
-                    if (el) el.textContent = "0xFA80";
+                    if (el) el.textContent = "0x0001";
                 });
         }
         _initUniqueVisits();
