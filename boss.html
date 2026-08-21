@@ -53,7 +53,7 @@
         @keyframes pulseFire { 0% { opacity: 0.75; } 100% { opacity: 1; } }
 
         .cinema-bar {
-            position: fixed; left: 0; width: 100vw; height: 13vh; background: #000;
+            position: fixed; left: 0; width: 100vw; height: 12vh; background: #000;
             z-index: 220; pointer-events: none; transform: scaleY(1);
         }
         .cinema-top { top: 0; transform-origin: top center; }
@@ -84,9 +84,9 @@
             40%, 60% { transform: translate3d(5px, 0, 0); }
         }
 
-        /* PLAYER HEARTS HUD (3 VIDAS SIEMPRE VISIBLES EN MÓVILES) */
+        /* PLAYER HEARTS HUD */
         .player-hud {
-            position: fixed; top: 14vh; left: 20px; z-index: 260;
+            position: fixed; top: 13.5vh; left: 24px; z-index: 260;
             display: flex; gap: 6px; font-family: var(--font-mono);
             background: rgba(0,0,0,0.85); padding: 8px 12px;
             border: 1px solid var(--text-dim); box-shadow: 0 0 15px rgba(0,0,0,0.8);
@@ -97,30 +97,112 @@
         }
         .player-heart.lost { color: #444; filter: none; opacity: 0.4; }
 
-        /* BOSS FIGHT HUD RESPONSIVE */
-        .boss-hud {
-            position: fixed; top: 14vh; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 520px; z-index: 250; font-family: var(--font-mono);
-            display: flex; align-items: center; gap: 14px; text-align: left;
-            background: rgba(0,0,0,0.92); padding: 12px 16px; border: 1px solid var(--danger-color);
-            box-shadow: 0 0 24px rgba(255,0,0,0.5); pointer-events: none;
+        /* NUEVA BARRA DE VIDA FLOTANTE ESTILO RPG / RETRO HUD */
+        .boss-hud-floating {
+            position: fixed; top: 13vh; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 680px; z-index: 250;
+            display: flex; flex-direction: column; align-items: center;
+            pointer-events: none;
         }
-        .boss-hud-portrait {
-            width: 48px; height: 48px; border-radius: 4px; border: 1px solid var(--text-dim);
-            object-fit: cover; background: #000; flex-shrink: 0;
+
+        .boss-header-floating {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 8px; width: 100%; justify-content: center;
         }
-        .boss-hud-content { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-        .boss-title-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--accent-color); font-weight: bold; }
-        .boss-hp-bg { width: 100%; height: 16px; background: #222; border: 1px solid var(--text-dim); position: relative; }
-        .boss-hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #ff3333, #9a2020); transition: width 0.1s ease; }
-        .boss-hint { font-size: 0.65rem; color: var(--text-dim); text-align: center; }
 
-        body.phase-2-active .boss-hud { border-color: #ffaa00; box-shadow: 0 0 35px rgba(255, 170, 0, 0.6); }
-        body.phase-2-active .boss-hp-bar { background: linear-gradient(90deg, #ffaa00, #ff3333); }
+        .boss-hp-eye {
+            width: 32px; height: 32px; object-fit: contain; flex-shrink: 0;
+            filter: brightness(0) invert(1) drop-shadow(0 0 6px rgba(255,255,255,0.8));
+            transition: filter 0.6s ease, transform 0.3s ease;
+        }
+        body.phase-2-active .boss-hp-eye {
+            filter: drop-shadow(0 0 10px #ff0000) brightness(1.2);
+            animation: eyePulse 1.2s infinite alternate ease-in-out;
+        }
+        @keyframes eyePulse {
+            0% { transform: scale(0.95); }
+            100% { transform: scale(1.15); }
+        }
 
-        /* AVATAR NÚCLEO EN EL COMBATE */
+        .boss-name-text {
+            font-family: var(--font-pixel); font-size: 0.82rem; color: #fff;
+            letter-spacing: 2px; text-shadow: 2px 2px 0px #000, 0 0 12px rgba(255,255,255,0.6);
+            text-align: center;
+        }
+        body.phase-2-active .boss-name-text {
+            color: #ff3333; text-shadow: 2px 2px 0px #000, 0 0 16px #ff0000;
+        }
+
+        .boss-hp-number-text {
+            font-family: var(--font-pixel); font-size: 0.72rem; color: var(--text-dim);
+            letter-spacing: 1px; margin-left: 4px;
+        }
+        body.phase-2-active .boss-hp-number-text { color: #ffaa00; }
+
+        /* ESTRUCTURA DE LA BARRA SIN ENCAPSULAMIENTO */
+        .boss-bar-chassis {
+            position: relative; width: 100%; height: 26px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .boss-bracket-left, .boss-bracket-right {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 14px; height: 30px; border-top: 3px solid #fff; border-bottom: 3px solid #fff;
+            z-index: 4; transition: border-color 0.6s ease;
+        }
+        .boss-bracket-left { left: 0; border-left: 4px solid #fff; clip-path: polygon(100% 0, 0 50%, 100% 100%, 75% 100%, 0 50%, 75% 0); width: 16px; background: #fff; }
+        .boss-bracket-right { right: 0; border-right: 4px solid #fff; clip-path: polygon(0 0, 100% 50%, 0 100%, 25% 100%, 100% 50%, 25% 0); width: 16px; background: #fff; }
+
+        body.phase-2-active .boss-bracket-left,
+        body.phase-2-active .boss-bracket-right {
+            background: #ff3333; box-shadow: 0 0 12px #ff0000;
+        }
+
+        .boss-bar-track {
+            width: 100%; height: 16px; background: #000;
+            border-top: 2px solid #fff; border-bottom: 2px solid #fff;
+            position: relative; overflow: hidden;
+            box-shadow: 0 0 12px rgba(255,255,255,0.3);
+            transition: border-color 0.6s ease, box-shadow 0.6s ease;
+        }
+        body.phase-2-active .boss-bar-track {
+            border-color: #ff3333;
+            box-shadow: 0 0 20px rgba(255,0,0,0.7);
+        }
+
+        .boss-bar-fill {
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, #555, #fff, #bbb);
+            box-shadow: 0 0 14px rgba(255,255,255,0.8);
+            transition: width 0.12s ease, background 0.6s ease;
+            position: relative;
+        }
+        .boss-bar-fill::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+            background: rgba(255,255,255,0.35);
+        }
+        body.phase-2-active .boss-bar-fill {
+            background: linear-gradient(90deg, #600, #ff1a1a, #ff7700);
+            box-shadow: 0 0 20px #ff0000;
+        }
+        body.phase-2-active .boss-bar-fill::after {
+            background: rgba(255,200,200,0.4);
+        }
+
+        .boss-bar-flair {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 10px; height: 24px; background: #fff; z-index: 5;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            box-shadow: 0 0 10px #fff;
+            transition: background 0.6s ease, box-shadow 0.6s ease;
+        }
+        body.phase-2-active .boss-bar-flair {
+            background: #ff3333; box-shadow: 0 0 15px #ff0000;
+        }
+
+        /* NÚCLEO CENTRAL */
         .boss-core-container {
-            position: fixed; top: 44%; left: 50%; width: 130px; height: 130px;
+            position: fixed; top: 48%; left: 50%; width: 130px; height: 130px;
             transform: translate(-50%, -50%) scale(1.6);
             display: flex; align-items: center; justify-content: center;
             z-index: 240;
@@ -265,7 +347,6 @@
         .ending-title { font-size: 1.8rem; color: #ffd700; text-shadow: 0 0 25px rgba(255, 215, 0, 0.8); }
         .ending-number { font-size: 0.85rem; color: #ff3333; letter-spacing: 2px; line-height: 1.6; }
 
-        /* GAME OVER: mismo lenguaje visual, tono rojo en vez de dorado */
         .game-over-title { color: #ff3333; text-shadow: 0 0 25px rgba(255, 51, 51, 0.8); }
         .retry-btn {
             margin-top: 10px; padding: 14px 28px; min-height: 44px;
@@ -293,21 +374,19 @@
             .p5-speech-bubble { margin-left: 110px; padding: 14px 16px 14px 18px; min-height: 75px; }
             .p5-speech-text { font-size: 0.82rem; }
             
-            /* Ajustes en móviles para que no se tape la vida */
-            .boss-hud { top: 18vh; max-width: 95%; padding: 8px 10px; gap: 8px; }
-            .player-hud { top: 13.5vh; left: 50%; transform: translateX(-50%); padding: 4px 10px; }
-            .boss-core-container { top: 48%; }
+            .boss-hud-floating { top: 16vh; max-width: 95%; }
+            .boss-name-text { font-size: 0.65rem; }
+            .player-hud { top: 12.5vh; left: 50%; transform: translateX(-50%); padding: 4px 10px; }
+            .boss-core-container { top: 50%; }
         }
 
-        /* MÓVILES EN HORIZONTAL / VENTANAS BAJAS: comprimimos el HUD vertical para que HUD, núcleo y diálogo no se solapen */
         @media (max-height: 480px) {
             .player-hud { top: 6vh; left: 8px; transform: none; padding: 4px 8px; gap: 4px; }
             .player-heart { font-size: 1rem; }
-            .boss-hud { top: 6vh; max-width: 60%; left: auto; right: 8px; transform: none; padding: 6px 8px; gap: 8px; }
-            .boss-hud-portrait { width: 34px; height: 34px; }
-            .boss-title-row { font-size: 0.65rem; }
-            .boss-hp-bg { height: 10px; }
-            .boss-hint { display: none; } /* texto secundario se oculta, pero la mecánica sigue intacta */
+            .boss-hud-floating { top: 5vh; max-width: 65%; left: auto; right: 8px; transform: none; }
+            .boss-name-text { font-size: 0.55rem; }
+            .boss-bar-chassis { height: 18px; }
+            .boss-bar-track { height: 10px; }
             .boss-core-container { top: 58%; transform: translate(-50%, -50%) scale(1.1); }
             .p5-dialogue-wrapper { bottom: 6px; }
             .p5-char-cutin { width: 90px; height: 120px; }
@@ -330,18 +409,20 @@
         <span class="player-heart" id="heart-3">❤</span>
     </div>
 
-    <!-- BOSS FIGHT HUD -->
-    <div class="boss-hud" id="boss-hud">
-        <img id="boss-hud-portrait" class="boss-hud-portrait" src="https://i.imgur.com/yJZqFA1.png" alt="Head">
-        <div class="boss-hud-content">
-            <div class="boss-title-row">
-                <span id="boss-title-name">SAPHYNIEL // DEIDAD TRANSCENDENTE</span>
-                <span id="boss-hp-num">100%</span>
+    <!-- NUEVA BARRA DE VIDA FLOTANTE SIN ENCAPSULAMIENTO -->
+    <div class="boss-hud-floating" id="boss-hud">
+        <div class="boss-header-floating">
+            <img id="boss-hp-eye" class="boss-hp-eye" src="https://i.imgur.com/k7yUr5v.png" alt="Eye">
+            <span class="boss-name-text" id="boss-title-name">SAPHYNIEL // DEIDAD TRANSCENDENTE</span>
+            <span class="boss-hp-number-text" id="boss-hp-num">[100%]</span>
+        </div>
+        <div class="boss-bar-chassis">
+            <div class="boss-bracket-left"></div>
+            <div class="boss-bar-track">
+                <div class="boss-bar-fill" id="boss-hp-fill"></div>
             </div>
-            <div class="boss-hp-bg">
-                <div class="boss-hp-bar" id="boss-hp-fill"></div>
-            </div>
-            <div class="boss-hint">[ ATACA AL NÚCLEO CENTRAL REPETIDAMENTE ]</div>
+            <div class="boss-bar-flair"></div>
+            <div class="boss-bracket-right"></div>
         </div>
     </div>
 
@@ -370,7 +451,7 @@
         <div class="ending-number" id="ending-subtext">Final 51 / 4424<br>La Trascendencia del Códice</div>
     </div>
 
-    <!-- GAME OVER OVERLAY (reemplaza el reload silencioso) -->
+    <!-- GAME OVER OVERLAY -->
     <div class="ending-screen game-over-screen" id="game-over-screen">
         <div class="ending-title game-over-title">HAS CAÍDO</div>
         <div class="ending-number">Tu voluntad no fue suficiente ante el Códice.</div>
@@ -395,8 +476,7 @@
         const sprites = {
             normalBody: "https://i.imgur.com/wI35gQl.png",
             angryBody: "https://i.imgur.com/nDEtxte.png",
-            angryHead: "https://i.imgur.com/7Zjt8O9.png",
-            normalHead: "https://i.imgur.com/yJZqFA1.png"
+            divineBossPhase2: "https://i.imgur.com/nfTzvF1.png"
         };
 
         const _soundBank = {
@@ -526,7 +606,7 @@
             setTimeout(() => document.body.classList.remove('shake-active'), 180);
         }
 
-        /* MOTOR DE DIÁLOGOS P5 RESISTENTE A SPAM */
+        /* MOTOR DE DIÁLOGOS P5 */
         function _showP5Dialogue(text, speaker = "SAPHYNIEL", tone = "mid", autoHideTime = 2800, callback = null) {
             const box = document.getElementById('p5-box');
             const nameEl = document.getElementById('p5-name');
@@ -536,7 +616,10 @@
             clearTimeout(_vnTmr);
             clearTimeout(_typewriterTimer);
 
-            if (tone === 'angry' || _bossPhase === 2) {
+            if (_bossPhase === 2) {
+                box.classList.add('angry-theme');
+                cutinImg.src = sprites.divineBossPhase2;
+            } else if (tone === 'angry') {
                 box.classList.add('angry-theme');
                 cutinImg.src = sprites.angryBody;
             } else {
@@ -573,7 +656,7 @@
         function _updateHpBar() {
             const pct = Math.max(0, Math.round((_bossCurrentHp / _bossMaxHp) * 100));
             document.getElementById('boss-hp-fill').style.width = `${pct}%`;
-            document.getElementById('boss-hp-num').textContent = `${pct}%`;
+            document.getElementById('boss-hp-num').textContent = `[${pct}%]`;
         }
 
         function _spawnDamagePopup(x, y, dmg, isHeal = false) {
@@ -644,7 +727,7 @@
             document.body.appendChild(bomb);
         }
 
-        /* MECÁNICA: CRUCES QUE CURAN AL NÚCLEO SI NO SE DESTRUYEN */
+        /* MECÁNICA: CRUCES QUE CURAN AL NÚCLEO */
         function _spawnQteCross() {
             if (_damageLock || _bossCurrentHp <= 0) return;
             const cross = document.createElement('div');
@@ -656,7 +739,6 @@
                 if (cross.parentNode) {
                     cross.remove();
                     
-                    // Si no se destruye a tiempo, cura al boss un 15% de su vida máxima
                     const healAmount = Math.round(_bossMaxHp * 0.15);
                     _bossCurrentHp = Math.min(_bossMaxHp, _bossCurrentHp + healAmount);
                     _updateHpBar();
@@ -744,13 +826,13 @@
             } else if (_bossPhase === 2) {
                 if (hpPercent <= 75 && !_p2Hit75) {
                     _p2Hit75 = true;
-                    _showP5Dialogue("¡NO ME DETENDRÁS! ¡ARDE EN EL JUICIO!", "SAPHYNIEL // CAOS", "angry", 2200);
+                    _showP5Dialogue("¡NO ME DETENDRÁS! ¡ARDE EN EL JUICIO!", "SAPHYNIEL // DIVINO", "angry", 2200);
                 } else if (hpPercent <= 50 && !_p2Hit50) {
                     _p2Hit50 = true;
-                    _showP5Dialogue("¡CONTEMPLA EL PESO DEL CÓDICE DIVINO!", "SAPHYNIEL // CAOS", "angry", 2200);
+                    _showP5Dialogue("¡CONTEMPLA EL PESO DEL CÓDICE DIVINO!", "SAPHYNIEL // DIVINO", "angry", 2200);
                 } else if (hpPercent <= 20 && !_p2Hit20) {
                     _p2Hit20 = true;
-                    _showP5Dialogue("¡¡ES INÚTIL RESISTIRSE AL DESTINO!!", "SAPHYNIEL // CAOS", "angry", 2200);
+                    _showP5Dialogue("¡¡ES INÚTIL RESISTIRSE AL DESTINO!!", "SAPHYNIEL // DIVINO", "angry", 2200);
                 } else {
                     _balatroVoice('angry');
                 }
@@ -766,8 +848,7 @@
             clearInterval(_qteSpawnerTimer);
 
             _showP5Dialogue("Imposible... ¿creíste que podrías quebrar mi código base?", "SAPHYNIEL", "low", 2800, () => {
-                document.getElementById('boss-hud-portrait').src = sprites.angryHead;
-                document.getElementById('boss-title-name').textContent = "SAPHYNIEL // CÓDICE CAOS (FASE 2)";
+                document.getElementById('boss-title-name').textContent = "SAPHYNIEL // DIOSA TRANSCENDENTE";
                 document.body.classList.add('phase-2-active');
 
                 _triggerScreenShake();
@@ -777,12 +858,12 @@
                 _bossMaxHp = 400;
                 _bossCurrentHp = 1;
 
-                _showP5Dialogue("¡¡CONTEMPLA LA VERDADERA DIVINIDAD!!", "SAPHYNIEL // CAOS", "angry", 0);
+                _showP5Dialogue("¡¡CONTEMPLA LA VERDADERA DIVINIDAD!!", "SAPHYNIEL // DIVINO", "angry", 0);
 
                 let healInterval = setInterval(() => {
                     _bossCurrentHp += 12;
                     _triggerScreenShake();
-                    _xpld(window.innerWidth / 2, window.innerHeight * 0.44, '#ffaa00', 8);
+                    _xpld(window.innerWidth / 2, window.innerHeight * 0.48, '#ffaa00', 8);
 
                     if (_bossCurrentHp >= _bossMaxHp) {
                         _bossCurrentHp = _bossMaxHp;
@@ -801,7 +882,7 @@
             });
         }
 
-        /* FINAL Y NOTIFICACIÓN A INDEX.HTML */
+        /* FINAL Y NOTIFICACIÓN */
         function _endBossFight() {
             _damageLock = true;
             clearInterval(_bombSpawnerTimer);
@@ -845,7 +926,7 @@
             });
         }
 
-        /* INICIO DEL MINIJUEGO DESDE INDEX.HTML */
+        /* MENSAJE DE APERTURA DESDE EL SITIO PRINCIPAL */
         window.addEventListener('message', (e) => {
             if (e.data && e.data.type === 'START_BOSS') {
                 _aInit();
