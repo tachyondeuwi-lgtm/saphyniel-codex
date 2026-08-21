@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SAPHYNIEL // ENCOUNTER</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Press+Start+2P&family=Rajdhani:wght@300;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #030303;
+            --text-main: #dad4bb;
+            --text-dim: #8b8778;
+            --accent-color: #f7f5ed;
+            --danger-color: #9a2020;
+            --font-hud: 'Rajdhani', sans-serif;
+            --font-angel: 'Cinzel', serif;
+            --font-mono: 'Share Tech Mono', monospace;
+            --font-pixel: 'Press Start 2P', monospace;
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            user-select: none; -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body { overscroll-behavior: none; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-hud);
+            width: 100vw; height: 100vh; height: 100dvh;
+            overflow: hidden;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        #particle-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+            pointer-events: none; z-index: 99;
+        }
+
+        .phase-2-fire {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+            background: radial-gradient(circle at center, rgba(154, 32, 32, 0.45) 0%, rgba(20, 0, 0, 0.95) 75%);
+            opacity: 0; pointer-events: none; z-index: -1;
+            transition: opacity 2.5s ease;
+        }
+        body.phase-2-active .phase-2-fire { opacity: 1; animation: pulseFire 1.8s infinite alternate; }
+        @keyframes pulseFire { 0% { opacity: 0.75; } 100% { opacity: 1; } }
+
+        .cinema-bar {
+            position: fixed; left: 0; width: 100vw; height: 13vh; background: #000;
+            z-index: 220; pointer-events: none; transform: scaleY(1);
+        }
+        .cinema-top { top: 0; transform-origin: top center; }
+        .cinema-bot { bottom: 0; transform-origin: bottom center; }
+
+        .speed-lines {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+            pointer-events: none; z-index: 215; opacity: 1;
+            background: repeating-linear-gradient(0deg, rgba(255,255,255,0.18) 0px, transparent 3px, transparent 16px);
+            background-size: 100% 100%;
+            animation: speedLinesMotion 0.08s steps(2) infinite;
+        }
+        body.phase-2-active .speed-lines {
+            background: repeating-linear-gradient(0deg, rgba(255,51,51,0.25) 0px, transparent 3px, transparent 16px);
+            animation-duration: 0.04s;
+        }
+        @keyframes speedLinesMotion {
+            0% { transform: scaleY(1) translateY(0); }
+            50% { transform: scaleY(1.08) translateY(-10px); }
+            100% { transform: scaleY(0.96) translateY(10px); }
+        }
+
+        .shake-active { animation: shakeScreen 0.15s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeScreen {
+            10%, 90% { transform: translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate3d(5px, 2px, 0); }
+            30%, 50%, 70% { transform: translate3d(-5px, -2px, 0); }
+            40%, 60% { transform: translate3d(5px, 0, 0); }
+        }
+
+        /* PLAYER HEARTS HUD (3 VIDAS SIEMPRE VISIBLES EN MÓVILES) */
+        .player-hud {
+            position: fixed; top: 14vh; left: 20px; z-index: 260;
+            display: flex; gap: 6px; font-family: var(--font-mono);
+            background: rgba(0,0,0,0.85); padding: 8px 12px;
+            border: 1px solid var(--text-dim); box-shadow: 0 0 15px rgba(0,0,0,0.8);
+        }
+        .player-heart {
+            font-size: 1.2rem; color: #ff3333; transition: transform 0.2s, opacity 0.2s;
+            filter: drop-shadow(0 0 6px #ff0000);
+        }
+        .player-heart.lost { color: #444; filter: none; opacity: 0.4; }
+
+        /* BOSS FIGHT HUD RESPONSIVE */
+        .boss-hud {
+            position: fixed; top: 14vh; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 520px; z-index: 250; font-family: var(--font-mono);
+            display: flex; align-items: center; gap: 14px; text-align: left;
+            background: rgba(0,0,0,0.92); padding: 12px 16px; border: 1px solid var(--danger-color);
+            box-shadow: 0 0 24px rgba(255,0,0,0.5); pointer-events: none;
+        }
+        .boss-hud-portrait {
+            width: 48px; height: 48px; border-radius: 4px; border: 1px solid var(--text-dim);
+            object-fit: cover; background: #000; flex-shrink: 0;
+        }
+        .boss-hud-content { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .boss-title-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--accent-color); font-weight: bold; }
+        .boss-hp-bg { width: 100%; height: 16px; background: #222; border: 1px solid var(--text-dim); position: relative; }
+        .boss-hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #ff3333, #9a2020); transition: width 0.1s ease; }
+        .boss-hint { font-size: 0.65rem; color: var(--text-dim); text-align: center; }
+
+        body.phase-2-active .boss-hud { border-color: #ffaa00; box-shadow: 0 0 35px rgba(255, 170, 0, 0.6); }
+        body.phase-2-active .boss-hp-bar { background: linear-gradient(90deg, #ffaa00, #ff3333); }
+
+        /* AVATAR NÚCLEO EN EL COMBATE */
+        .boss-core-container {
+            position: fixed; top: 44%; left: 50%; width: 130px; height: 130px;
+            transform: translate(-50%, -50%) scale(1.6);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 240;
+            transition: top 0.4s ease, left 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        body.phase-2-active .boss-core-container {
+            transform: translate(-50%, -50%) scale(1.9);
+        }
+
+        .boss-core-btn {
+            background: transparent; border: none; padding: 0; outline: none;
+            width: 120px; height: 120px; border-radius: 8px; display: flex;
+            align-items: center; justify-content: center; position: relative; z-index: 2;
+            cursor: pointer; touch-action: manipulation;
+        }
+
+        .boss-core-img {
+            width: 100%; height: 100%; object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.25));
+            pointer-events: none;
+        }
+        body.phase-2-active .boss-core-img { filter: drop-shadow(0 0 24px #ff3333) brightness(1.15); }
+
+        .sacred-wheel-1 {
+            position: absolute; top: -14px; left: -14px; right: -14px; bottom: -14px;
+            border: 2px dashed rgba(218, 212, 187, 0.5); border-radius: 50%;
+            animation: rotCW 18s linear infinite; pointer-events: none; opacity: 0.6;
+        }
+        .sacred-wheel-2 {
+            position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px;
+            border: 2px solid rgba(218, 212, 187, 0.3); border-radius: 50%;
+            animation: rotCCW 24s linear infinite; pointer-events: none; opacity: 0.5;
+        }
+        .sacred-wheel-2::after {
+            content: '❖'; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+            font-size: 11px; color: var(--text-dim);
+        }
+
+        body.phase-2-active .sacred-wheel-1 {
+            border-color: #ff3333; box-shadow: 0 0 16px #ff0000; animation-duration: 3s; opacity: 0.9;
+        }
+        body.phase-2-active .sacred-wheel-2 {
+            border-color: #ffaa00; border-style: dashed; box-shadow: 0 0 16px #ffaa00; animation-duration: 2s; opacity: 0.9;
+        }
+
+        .boss-wings {
+            position: absolute; top: 50%; left: 50%; width: 340px; height: 160px;
+            transform: translate(-50%, -50%); opacity: 0; pointer-events: none; z-index: 1;
+            background: radial-gradient(ellipse, rgba(255,51,51,0.5) 0%, transparent 65%);
+            transition: opacity 2s ease;
+        }
+        body.phase-2-active .boss-wings { opacity: 1; animation: wingsFlap 1.4s infinite alternate ease-in-out; }
+        @keyframes wingsFlap { 
+            0% { transform: translate(-50%, -50%) scaleX(0.95) scaleY(0.85); } 
+            100% { transform: translate(-50%, -50%) scaleX(1.35) scaleY(1.15); } 
+        }
+
+        @keyframes rotCW { 100% { transform: rotate(360deg); } }
+        @keyframes rotCCW { 100% { transform: rotate(-360deg); } }
+
+        /* PERSONA 5 CUT-IN DIALOGUE ENGINE */
+        .p5-dialogue-wrapper {
+            position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%) translateY(40px);
+            width: 95%; max-width: 820px; z-index: 310; display: none; opacity: 0;
+            pointer-events: none; transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
+        }
+        .p5-dialogue-wrapper.active { display: block; opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .p5-char-cutin {
+            position: absolute; bottom: -10px; left: 10px; width: 180px; height: 260px;
+            object-fit: contain; object-position: bottom left; z-index: 2;
+            filter: drop-shadow(4px 4px 0px #000) drop-shadow(-2px -2px 0px #fff);
+            pointer-events: none;
+        }
+
+        .p5-name-tag {
+            position: absolute; top: -16px; left: 190px;
+            background: #fff; color: #000; font-family: var(--font-angel);
+            font-size: 1.1rem; font-weight: bold; padding: 4px 18px;
+            transform: skew(-14deg); border: 2px solid #000; z-index: 3;
+            box-shadow: 3px 3px 0px #000; letter-spacing: 2px;
+        }
+
+        .p5-speech-bubble {
+            margin-left: 170px; background: #111; color: #fff;
+            border: 3px solid #fff; padding: 22px 28px 22px 35px;
+            clip-path: polygon(0% 12%, 100% 0%, 96% 100%, 4% 94%);
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.9), 0 0 25px rgba(255,255,255,0.2);
+            min-height: 100px; display: flex; align-items: center; position: relative;
+        }
+        .p5-speech-text {
+            font-family: var(--font-mono); font-size: 1.05rem; font-weight: bold;
+            line-height: 1.4; color: #f7f5ed; text-shadow: 1px 1px 0px #000;
+        }
+
+        .p5-dialogue-wrapper.angry-theme .p5-name-tag { background: #ff3333; color: #fff; border-color: #fff; }
+        .p5-dialogue-wrapper.angry-theme .p5-speech-bubble { border-color: #ff3333; background: #1a0505; box-shadow: 6px 6px 0px #ff0000; }
+        .p5-dialogue-wrapper.angry-theme .p5-speech-text { color: #ffcccc; }
+
+        /* MECÁNICA: BOMBAS */
+        .boss-bomb {
+            position: fixed; width: 44px; height: 44px; border-radius: 50%;
+            background: radial-gradient(circle, #ff3333 0%, #000 80%);
+            border: 2px solid #ff3333; box-shadow: 0 0 16px #ff0000;
+            z-index: 245; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            font-family: var(--font-pixel); font-size: 0.65rem; color: #fff;
+            animation: bombPulse 0.4s infinite alternate;
+        }
+        @keyframes bombPulse { 0% { transform: scale(0.9); } 100% { transform: scale(1.15); } }
+
+        /* MECÁNICA: CRUCES DE INTERRUPCIÓN Y CURACIÓN */
+        .qte-cross {
+            position: fixed; width: 50px; height: 50px; z-index: 246;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            animation: qteSpin 2s linear infinite;
+        }
+        .qte-cross::before, .qte-cross::after { content: ''; position: absolute; background: #ffd700; box-shadow: 0 0 12px #ffd700; }
+        .qte-cross::before { width: 100%; height: 6px; border-radius: 3px; }
+        .qte-cross::after { height: 100%; width: 6px; border-radius: 3px; }
+        @keyframes qteSpin { 0% { transform: rotate(0deg) scale(0.9); } 50% { transform: rotate(180deg) scale(1.2); } 100% { transform: rotate(360deg) scale(0.9); } }
+
+        .damage-number {
+            position: fixed; font-family: var(--font-pixel); font-size: 1.1rem;
+            color: #ff3333; text-shadow: 0 0 8px #000, 0 0 12px #ff0000;
+            pointer-events: none; z-index: 320; animation: damageFloat 0.6s ease-out forwards;
+        }
+        .damage-number.heal {
+            color: #43b581; text-shadow: 0 0 8px #000, 0 0 12px #43b581;
+        }
+        @keyframes damageFloat {
+            0% { transform: translate(-50%, -50%) scale(0.6); opacity: 1; }
+            40% { transform: translate(-50%, -85px) scale(1.3); opacity: 1; }
+            100% { transform: translate(-50%, -120px) scale(0.9); opacity: 0; }
+        }
+
+        .ending-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
+            background: #000; z-index: 350; display: none; flex-direction: column;
+            justify-content: center; align-items: center; gap: 16px; font-family: var(--font-pixel);
+            color: #f7f5ed; text-align: center; padding: 20px;
+        }
+        .ending-title { font-size: 1.8rem; color: #ffd700; text-shadow: 0 0 25px rgba(255, 215, 0, 0.8); }
+        .ending-number { font-size: 0.85rem; color: #ff3333; letter-spacing: 2px; line-height: 1.6; }
+
+        /* GAME OVER: mismo lenguaje visual, tono rojo en vez de dorado */
+        .game-over-title { color: #ff3333; text-shadow: 0 0 25px rgba(255, 51, 51, 0.8); }
+        .retry-btn {
+            margin-top: 10px; padding: 14px 28px; min-height: 44px;
+            background: transparent; border: 2px solid #ff3333; color: #f7f5ed;
+            font-family: var(--font-pixel); font-size: 0.75rem; letter-spacing: 2px;
+            cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+            transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+        }
+        .retry-btn:hover, .retry-btn:focus-visible { background: rgba(255,51,51,0.15); box-shadow: 0 0 20px rgba(255,51,51,0.5); }
+        .retry-btn:active { transform: scale(0.95); }
+
+        .glitch-flash { animation: glitchEffect 0.25s infinite; }
+        @keyframes glitchEffect {
+            0% { transform: translate(0); filter: hue-rotate(0deg); }
+            25% { transform: translate(-4px, 2px); filter: invert(15%); }
+            50% { transform: translate(4px, -2px); filter: contrast(150%); }
+            75% { transform: translate(-2px, -3px); }
+            100% { transform: translate(0); }
+        }
+
+        @media (max-width: 680px) {
+            .p5-dialogue-wrapper { width: 98%; bottom: 15px; }
+            .p5-char-cutin { width: 120px; height: 170px; bottom: -6px; left: 0px; }
+            .p5-name-tag { left: 125px; top: -12px; font-size: 0.85rem; padding: 2px 10px; }
+            .p5-speech-bubble { margin-left: 110px; padding: 14px 16px 14px 18px; min-height: 75px; }
+            .p5-speech-text { font-size: 0.82rem; }
+            
+            /* Ajustes en móviles para que no se tape la vida */
+            .boss-hud { top: 18vh; max-width: 95%; padding: 8px 10px; gap: 8px; }
+            .player-hud { top: 13.5vh; left: 50%; transform: translateX(-50%); padding: 4px 10px; }
+            .boss-core-container { top: 48%; }
+        }
+
+        /* MÓVILES EN HORIZONTAL / VENTANAS BAJAS: comprimimos el HUD vertical para que HUD, núcleo y diálogo no se solapen */
+        @media (max-height: 480px) {
+            .player-hud { top: 6vh; left: 8px; transform: none; padding: 4px 8px; gap: 4px; }
+            .player-heart { font-size: 1rem; }
+            .boss-hud { top: 6vh; max-width: 60%; left: auto; right: 8px; transform: none; padding: 6px 8px; gap: 8px; }
+            .boss-hud-portrait { width: 34px; height: 34px; }
+            .boss-title-row { font-size: 0.65rem; }
+            .boss-hp-bg { height: 10px; }
+            .boss-hint { display: none; } /* texto secundario se oculta, pero la mecánica sigue intacta */
+            .boss-core-container { top: 58%; transform: translate(-50%, -50%) scale(1.1); }
+            .p5-dialogue-wrapper { bottom: 6px; }
+            .p5-char-cutin { width: 90px; height: 120px; }
+            .p5-name-tag { left: 95px; }
+            .p5-speech-bubble { margin-left: 85px; min-height: 55px; padding: 10px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="phase-2-fire"></div>
+    <div class="cinema-bar cinema-top"></div>
+    <div class="cinema-bar cinema-bot"></div>
+    <div class="speed-lines"></div>
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- PLAYER HEARTS HUD -->
+    <div class="player-hud">
+        <span class="player-heart" id="heart-1">❤</span>
+        <span class="player-heart" id="heart-2">❤</span>
+        <span class="player-heart" id="heart-3">❤</span>
+    </div>
+
+    <!-- BOSS FIGHT HUD -->
+    <div class="boss-hud" id="boss-hud">
+        <img id="boss-hud-portrait" class="boss-hud-portrait" src="https://i.imgur.com/yJZqFA1.png" alt="Head">
+        <div class="boss-hud-content">
+            <div class="boss-title-row">
+                <span id="boss-title-name">SAPHYNIEL // DEIDAD TRANSCENDENTE</span>
+                <span id="boss-hp-num">100%</span>
+            </div>
+            <div class="boss-hp-bg">
+                <div class="boss-hp-bar" id="boss-hp-fill"></div>
+            </div>
+            <div class="boss-hint">[ ATACA AL NÚCLEO CENTRAL REPETIDAMENTE ]</div>
+        </div>
+    </div>
+
+    <!-- PERSONA 5 CUT-IN DIALOGUE BOX -->
+    <div class="p5-dialogue-wrapper" id="p5-box">
+        <img id="p5-cutin-img" class="p5-char-cutin" src="https://i.imgur.com/wI35gQl.png" alt="Portrait">
+        <div class="p5-name-tag" id="p5-name">SAPHYNIEL</div>
+        <div class="p5-speech-bubble">
+            <div class="p5-speech-text" id="p5-text"></div>
+        </div>
+    </div>
+
+    <!-- BOSS CORE CENTRAL -->
+    <div class="boss-core-container" id="boss-core">
+        <div class="boss-wings"></div>
+        <div class="sacred-wheel-1"></div>
+        <div class="sacred-wheel-2"></div>
+        <button type="button" class="boss-core-btn" id="core-trigger">
+            <img class="boss-core-img" src="https://i.imgur.com/IJQsTbJ.png" alt="Core">
+        </button>
+    </div>
+
+    <!-- ENDING OVERLAY -->
+    <div class="ending-screen" id="ending-screen">
+        <div class="ending-title" id="ending-title">GOOD ENDING</div>
+        <div class="ending-number" id="ending-subtext">Final 51 / 4424<br>La Trascendencia del Códice</div>
+    </div>
+
+    <!-- GAME OVER OVERLAY (reemplaza el reload silencioso) -->
+    <div class="ending-screen game-over-screen" id="game-over-screen">
+        <div class="ending-title game-over-title">HAS CAÍDO</div>
+        <div class="ending-number">Tu voluntad no fue suficiente ante el Códice.</div>
+        <button type="button" class="retry-btn" id="retry-btn">[ REINTENTAR ]</button>
+    </div>
+
+    <script>
+        let _ac = null, _sOn = true;
+        let _bossPhase = 1;
+        let _bossMaxHp = 250;
+        let _bossCurrentHp = 250;
+        let _playerHp = 3;
+        let _damageLock = false;
+        let _bgmTrack = null;
+        let _vnTmr = null, _typewriterTimer = null;
+        let _bombSpawnerTimer = null;
+        let _qteSpawnerTimer = null;
+
+        let _p1Hit75 = false, _p1Hit50 = false, _p1Hit20 = false;
+        let _p2Hit75 = false, _p2Hit50 = false, _p2Hit20 = false;
+
+        const sprites = {
+            normalBody: "https://i.imgur.com/wI35gQl.png",
+            angryBody: "https://i.imgur.com/nDEtxte.png",
+            angryHead: "https://i.imgur.com/7Zjt8O9.png",
+            normalHead: "https://i.imgur.com/yJZqFA1.png"
+        };
+
+        const _soundBank = {
+            bossIntro: "https://www.myinstants.com/media/sounds/anime-wow-sound-effect.mp3",
+            bossDefeat: "https://www.myinstants.com/media/sounds/tada-fanfare-sound.mp3",
+            vineBoom: "https://www.myinstants.com/media/sounds/vine-boom.mp3",
+            vordtTheme: "https://www.myinstants.com/media/sounds/dark-souls-3-vordt-of-the-boreal-valley-ost-mp3cut_1.mp3"
+        };
+
+        function _playBossBgm() {
+            if (!_sOn) return;
+            try {
+                if (_bgmTrack) { _bgmTrack.pause(); _bgmTrack.currentTime = 0; }
+                _bgmTrack = new Audio(_soundBank.vordtTheme);
+                _bgmTrack.volume = 0.25;
+                _bgmTrack.loop = true;
+                _bgmTrack.play().catch(() => {});
+            } catch (e) {}
+        }
+
+        function _stopBossBgm() {
+            if (_bgmTrack) { _bgmTrack.pause(); _bgmTrack.currentTime = 0; _bgmTrack = null; }
+        }
+
+        function playCustomAudio(url) {
+            if (!_sOn || !url) return;
+            try {
+                const audio = new Audio(url);
+                audio.volume = 0.25;
+                audio.play().catch(() => {});
+            } catch (e) {}
+        }
+
+        /* CANVAS PARTICLES */
+        const _cv = document.getElementById('particle-canvas');
+        const _cx = _cv.getContext('2d');
+        let _pts = [];
+
+        function _rsz() { _cv.width = window.innerWidth; _cv.height = window.innerHeight; }
+        window.addEventListener('resize', _rsz);
+        _rsz();
+
+        class _PixPt {
+            constructor(x, y, col, vx, vy, dc = 0.02, sz = 4) {
+                this.x = x; this.y = y;
+                this.sz = sz || (Math.random() * 4 + 2);
+                this.vx = vx !== undefined ? vx : (Math.random() - 0.5) * 14;
+                this.vy = vy !== undefined ? vy : (Math.random() - 0.5) * 14;
+                this.lf = 1.0;
+                this.dc = dc || (Math.random() * 0.03 + 0.015);
+                this.col = col;
+            }
+            up() { this.x += this.vx; this.y += this.vy; this.lf -= this.dc; }
+            dr(ctx) {
+                ctx.fillStyle = this.col;
+                ctx.globalAlpha = Math.max(0, this.lf);
+                ctx.fillRect(this.x, this.y, this.sz, this.sz);
+            }
+        }
+
+        function _xpld(x, y, col = '#dad4bb', cnt = 35) {
+            for (let i = 0; i < cnt; i++) _pts.push(new _PixPt(x, y, col));
+        }
+
+        function _animP() {
+            _cx.clearRect(0, 0, _cv.width, _cv.height);
+            for (let i = _pts.length - 1; i >= 0; i--) {
+                _pts[i].up();
+                _pts[i].dr(_cx);
+                if (_pts[i].lf <= 0) _pts.splice(i, 1);
+            }
+            requestAnimationFrame(_animP);
+        }
+        _animP();
+
+        function _aInit() {
+            if (!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)();
+            if (_ac.state === 'suspended') _ac.resume();
+        }
+
+        function _beep(f, d, t = 'sine', vol = 0.04) {
+            if (!_sOn) return; _aInit();
+            try {
+                if (!_ac) return;
+                const o = _ac.createOscillator(), g = _ac.createGain();
+                o.type = t; o.frequency.value = f;
+                g.gain.setValueAtTime(vol, _ac.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.00001, _ac.currentTime + d);
+                o.connect(g); g.connect(_ac.destination);
+                o.start(); o.stop(_ac.currentTime + d);
+            } catch (e) {}
+        }
+
+        function _balatroVoice(tone = 'mid') {
+            if (!_sOn) return; _aInit();
+            try {
+                if (!_ac) return;
+                const tones = {
+                    low: [160, 210, 185],
+                    mid: [320, 420, 360, 480],
+                    high: [580, 720, 640, 800],
+                    angry: [110, 140, 95, 130]
+                };
+                const pool = tones[tone] || tones.mid;
+                for (let k = 0; k < 4; k++) {
+                    const o = _ac.createOscillator(), g = _ac.createGain();
+                    const freq = pool[Math.floor(Math.random() * pool.length)];
+                    o.type = tone === 'angry' ? 'sawtooth' : 'triangle';
+                    o.frequency.setValueAtTime(freq, _ac.currentTime + (k * 0.045));
+                    g.gain.setValueAtTime(0.04, _ac.currentTime + (k * 0.045));
+                    g.gain.exponentialRampToValueAtTime(0.0001, _ac.currentTime + (k * 0.045) + 0.04);
+                    o.connect(g); g.connect(_ac.destination);
+                    o.start(_ac.currentTime + (k * 0.045));
+                    o.stop(_ac.currentTime + (k * 0.045) + 0.045);
+                }
+            } catch (e) {}
+        }
+
+        document.getElementById('retry-btn').addEventListener('click', () => {
+            location.reload();
+        });
+
+        function _triggerScreenShake() {
+            document.body.classList.remove('shake-active');
+            void document.body.offsetWidth;
+            document.body.classList.add('shake-active');
+            setTimeout(() => document.body.classList.remove('shake-active'), 180);
+        }
+
+        /* MOTOR DE DIÁLOGOS P5 RESISTENTE A SPAM */
+        function _showP5Dialogue(text, speaker = "SAPHYNIEL", tone = "mid", autoHideTime = 2800, callback = null) {
+            const box = document.getElementById('p5-box');
+            const nameEl = document.getElementById('p5-name');
+            const textEl = document.getElementById('p5-text');
+            const cutinImg = document.getElementById('p5-cutin-img');
+
+            clearTimeout(_vnTmr);
+            clearTimeout(_typewriterTimer);
+
+            if (tone === 'angry' || _bossPhase === 2) {
+                box.classList.add('angry-theme');
+                cutinImg.src = sprites.angryBody;
+            } else {
+                box.classList.remove('angry-theme');
+                cutinImg.src = sprites.normalBody;
+            }
+
+            nameEl.textContent = speaker;
+            textEl.innerHTML = '';
+            box.classList.add('active');
+
+            _balatroVoice(tone);
+
+            let idx = 0;
+            function typeChar() {
+                if (idx < text.length) {
+                    textEl.innerHTML += text.charAt(idx);
+                    idx++;
+                    _typewriterTimer = setTimeout(typeChar, 20);
+                } else {
+                    if (autoHideTime > 0) {
+                        _vnTmr = setTimeout(() => {
+                            box.classList.remove('active');
+                            if (callback) callback();
+                        }, autoHideTime);
+                    } else if (callback) {
+                        callback();
+                    }
+                }
+            }
+            typeChar();
+        }
+
+        function _updateHpBar() {
+            const pct = Math.max(0, Math.round((_bossCurrentHp / _bossMaxHp) * 100));
+            document.getElementById('boss-hp-fill').style.width = `${pct}%`;
+            document.getElementById('boss-hp-num').textContent = `${pct}%`;
+        }
+
+        function _spawnDamagePopup(x, y, dmg, isHeal = false) {
+            const el = document.createElement('div');
+            el.className = `damage-number ${isHeal ? 'heal' : ''}`;
+            el.textContent = isHeal ? `+${dmg}` : `-${dmg}`;
+            el.style.left = `${x + (Math.random() - 0.5) * 40}px`;
+            el.style.top = `${y + (Math.random() - 0.5) * 20}px`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 600);
+        }
+
+        function _damagePlayer() {
+            if (_playerHp <= 0) return;
+            _playerHp--;
+            _beep(90, 0.3, 'sawtooth', 0.08);
+            _triggerScreenShake();
+
+            for (let i = 1; i <= 3; i++) {
+                const heart = document.getElementById(`heart-${i}`);
+                if (i > _playerHp) heart.classList.add('lost');
+            }
+
+            if (_playerHp <= 0) {
+                _damageLock = true;
+                clearInterval(_bombSpawnerTimer);
+                clearInterval(_qteSpawnerTimer);
+                document.querySelectorAll('.boss-bomb, .qte-cross').forEach(el => el.remove());
+                _showP5Dialogue("Tu determinación mortal ha colapsado.", "SAPHYNIEL", "low", 2400, () => {
+                    document.getElementById('game-over-screen').style.display = 'flex';
+                });
+            }
+        }
+
+        /* MECÁNICA: BOMBAS */
+        function _spawnBomb() {
+            if (_damageLock || _bossCurrentHp <= 0) return;
+            const bomb = document.createElement('div');
+            bomb.className = 'boss-bomb';
+            bomb.style.top = `${Math.random() * 50 + 25}vh`;
+            bomb.style.left = `${Math.random() * 75 + 10}vw`;
+
+            let timer = 3;
+            bomb.textContent = timer;
+
+            const countdown = setInterval(() => {
+                timer--;
+                if (timer > 0) {
+                    bomb.textContent = timer;
+                } else {
+                    clearInterval(countdown);
+                    if (bomb.parentNode) {
+                        _xpld(bomb.offsetLeft + 22, bomb.offsetTop + 22, '#ff3333', 30);
+                        bomb.remove();
+                        _damagePlayer();
+                    }
+                }
+            }, 800);
+
+            bomb.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                clearInterval(countdown);
+                _xpld(bomb.offsetLeft + 22, bomb.offsetTop + 22, '#ffd700', 25);
+                _beep(900, 0.06, 'triangle');
+                bomb.remove();
+            });
+
+            document.body.appendChild(bomb);
+        }
+
+        /* MECÁNICA: CRUCES QUE CURAN AL NÚCLEO SI NO SE DESTRUYEN */
+        function _spawnQteCross() {
+            if (_damageLock || _bossCurrentHp <= 0) return;
+            const cross = document.createElement('div');
+            cross.className = 'qte-cross';
+            cross.style.top = `${Math.random() * 45 + 30}vh`;
+            cross.style.left = `${Math.random() * 70 + 15}vw`;
+
+            const timeout = setTimeout(() => {
+                if (cross.parentNode) {
+                    cross.remove();
+                    
+                    // Si no se destruye a tiempo, cura al boss un 15% de su vida máxima
+                    const healAmount = Math.round(_bossMaxHp * 0.15);
+                    _bossCurrentHp = Math.min(_bossMaxHp, _bossCurrentHp + healAmount);
+                    _updateHpBar();
+                    
+                    const core = document.getElementById('boss-core');
+                    const r = core.getBoundingClientRect();
+                    _xpld(r.left + r.width / 2, r.top + r.height / 2, '#43b581', 40);
+                    _spawnDamagePopup(r.left + r.width / 2, r.top + r.height / 2, healAmount, true);
+                    _beep(659.25, 0.3, 'sine', 0.06);
+                    _showP5Dialogue("El Códice me restaura. ¡Tus dudas alimentan mi poder!", "SAPHYNIEL", "angry", 2000);
+                }
+            }, 2200);
+
+            cross.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                clearTimeout(timeout);
+                _xpld(cross.offsetLeft + 25, cross.offsetTop + 25, '#ffd700', 40);
+                _beep(1200, 0.15, 'sine', 0.07);
+                _showP5Dialogue("¡¿Cómo te atreves a interrumpir mi conjuro?!", "SAPHYNIEL", "angry", 1600);
+                cross.remove();
+            });
+
+            document.body.appendChild(cross);
+        }
+
+        function _moveBossPhase2() {
+            const core = document.getElementById('boss-core');
+            const randomX = Math.random() * 60 + 20;
+            const randomY = Math.random() * 35 + 25;
+            const randomScale = (Math.random() * 0.6 + 1.4).toFixed(2);
+            
+            core.style.top = `${randomY}%`;
+            core.style.left = `${randomX}%`;
+            core.style.transform = `translate(-50%, -50%) scale(${randomScale})`;
+        }
+
+        /* ATAQUE AL NÚCLEO */
+        document.getElementById('core-trigger').addEventListener('pointerdown', (e) => {
+            if (_damageLock) return;
+            const dmg = 10;
+            _bossCurrentHp -= dmg;
+
+            const r = e.currentTarget.getBoundingClientRect();
+            const posX = e.clientX || (r.left + r.width / 2);
+            const posY = e.clientY || (r.top + r.height / 2);
+
+            _xpld(posX, posY, _bossPhase === 2 ? '#ffaa00' : '#ff3333', 30);
+            _xpld(posX, posY, '#ffd700', 15);
+            _spawnDamagePopup(posX, posY, dmg);
+            _triggerScreenShake();
+
+            if (_bossPhase === 2) {
+                _moveBossPhase2();
+            }
+
+            if (_bossPhase === 1 && _bossCurrentHp <= 1) {
+                _bossCurrentHp = 1;
+                _updateHpBar();
+                _triggerPhase2();
+                return;
+            }
+
+            if (_bossPhase === 2 && _bossCurrentHp <= 0) {
+                _endBossFight();
+                return;
+            }
+
+            _updateHpBar();
+
+            const hpPercent = (_bossCurrentHp / _bossMaxHp) * 100;
+
+            if (_bossPhase === 1) {
+                if (hpPercent <= 75 && !_p1Hit75) {
+                    _p1Hit75 = true;
+                    _showP5Dialogue("¿Eso es todo lo que tienes? Apenas un rasguño.", "SAPHYNIEL // DEIDAD", "angry", 2200);
+                } else if (hpPercent <= 50 && !_p1Hit50) {
+                    _p1Hit50 = true;
+                    _showP5Dialogue("Tus golpes carecen de fe. ¡Sigue intentándolo!", "SAPHYNIEL // DEIDAD", "angry", 2200);
+                } else if (hpPercent <= 20 && !_p1Hit20) {
+                    _p1Hit20 = true;
+                    _showP5Dialogue("¡No podrás quebrar este registro sagrado!", "SAPHYNIEL // DEIDAD", "angry", 2200);
+                } else {
+                    _balatroVoice('angry');
+                }
+            } else if (_bossPhase === 2) {
+                if (hpPercent <= 75 && !_p2Hit75) {
+                    _p2Hit75 = true;
+                    _showP5Dialogue("¡NO ME DETENDRÁS! ¡ARDE EN EL JUICIO!", "SAPHYNIEL // CAOS", "angry", 2200);
+                } else if (hpPercent <= 50 && !_p2Hit50) {
+                    _p2Hit50 = true;
+                    _showP5Dialogue("¡CONTEMPLA EL PESO DEL CÓDICE DIVINO!", "SAPHYNIEL // CAOS", "angry", 2200);
+                } else if (hpPercent <= 20 && !_p2Hit20) {
+                    _p2Hit20 = true;
+                    _showP5Dialogue("¡¡ES INÚTIL RESISTIRSE AL DESTINO!!", "SAPHYNIEL // CAOS", "angry", 2200);
+                } else {
+                    _balatroVoice('angry');
+                }
+            }
+        });
+
+        /* FASE 2 */
+        function _triggerPhase2() {
+            _damageLock = true;
+            _updateHpBar();
+
+            clearInterval(_bombSpawnerTimer);
+            clearInterval(_qteSpawnerTimer);
+
+            _showP5Dialogue("Imposible... ¿creíste que podrías quebrar mi código base?", "SAPHYNIEL", "low", 2800, () => {
+                document.getElementById('boss-hud-portrait').src = sprites.angryHead;
+                document.getElementById('boss-title-name').textContent = "SAPHYNIEL // CÓDICE CAOS (FASE 2)";
+                document.body.classList.add('phase-2-active');
+
+                _triggerScreenShake();
+                playCustomAudio(_soundBank.vineBoom);
+
+                _bossPhase = 2;
+                _bossMaxHp = 400;
+                _bossCurrentHp = 1;
+
+                _showP5Dialogue("¡¡CONTEMPLA LA VERDADERA DIVINIDAD!!", "SAPHYNIEL // CAOS", "angry", 0);
+
+                let healInterval = setInterval(() => {
+                    _bossCurrentHp += 12;
+                    _triggerScreenShake();
+                    _xpld(window.innerWidth / 2, window.innerHeight * 0.44, '#ffaa00', 8);
+
+                    if (_bossCurrentHp >= _bossMaxHp) {
+                        _bossCurrentHp = _bossMaxHp;
+                        clearInterval(healInterval);
+                        _damageLock = false;
+
+                        _bombSpawnerTimer = setInterval(_spawnBomb, 3500);
+                        _qteSpawnerTimer = setInterval(_spawnQteCross, 6000);
+
+                        setTimeout(() => {
+                            document.getElementById('p5-box').classList.remove('active');
+                        }, 1200);
+                    }
+                    _updateHpBar();
+                }, 75);
+            });
+        }
+
+        /* FINAL Y NOTIFICACIÓN A INDEX.HTML */
+        function _endBossFight() {
+            _damageLock = true;
+            clearInterval(_bombSpawnerTimer);
+            clearInterval(_qteSpawnerTimer);
+            document.querySelectorAll('.boss-bomb, .qte-cross').forEach(el => el.remove());
+
+            document.getElementById('boss-hud').style.display = 'none';
+            document.body.classList.remove('phase-2-active');
+            _stopBossBgm();
+
+            const core = document.getElementById('boss-core');
+            const r = core.getBoundingClientRect();
+            const cx = r.left + r.width / 2;
+            const cy = r.top + r.height / 2;
+
+            _showP5Dialogue("Imposible... ¿este es... mi límite...?", "SAPHYNIEL", "low", 3000, () => {
+                for (let k = 0; k < 5; k++) {
+                    setTimeout(() => {
+                        _xpld(cx, cy, '#ffd700', 60);
+                        _xpld(cx, cy, '#ff3333', 70);
+                        _triggerScreenShake();
+                        _beep(80 + (k * 50), 0.3, 'sawtooth', 0.08);
+                    }, k * 200);
+                }
+
+                setTimeout(() => {
+                    playCustomAudio(_soundBank.bossDefeat);
+                    const endScreen = document.getElementById('ending-screen');
+                    endScreen.style.display = 'flex';
+
+                    setTimeout(() => {
+                        endScreen.classList.add('glitch-flash');
+
+                        setTimeout(() => {
+                            endScreen.classList.remove('glitch-flash');
+                            endScreen.style.display = 'none';
+                            window.parent.postMessage({ type: 'BOSS_DEFEATED' }, window.location.origin === 'null' || window.location.protocol === 'file:' ? '*' : window.location.origin);
+                        }, 2200);
+                    }, 3500);
+                }, 1200);
+            });
+        }
+
+        /* INICIO DEL MINIJUEGO DESDE INDEX.HTML */
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'START_BOSS') {
+                _aInit();
+                _playBossBgm();
+
+                const bossQuotes = [
+                    "¿Creíste que una máquina orbital perturbaría mi presencia?",
+                    "Has despertado la voluntad absoluta del Códice...",
+                    "Pobre alma mortal. Contempla el peso del juicio divino."
+                ];
+
+                let qIdx = 0;
+                function showNextBossQuote() {
+                    if (qIdx < bossQuotes.length) {
+                        _showP5Dialogue(bossQuotes[qIdx], "SAPHYNIEL // DEIDAD", "low", 2800, () => {
+                            qIdx++;
+                            setTimeout(showNextBossQuote, 400);
+                        });
+                    } else {
+                        _damageLock = false;
+                        _showP5Dialogue("¡DEMUÉSTRAME SI ERES DIGNO DE TRASCENDER!", "SAPHYNIEL // DEIDAD", "angry", 2600);
+                        playCustomAudio(_soundBank.bossIntro);
+                        _bombSpawnerTimer = setInterval(_spawnBomb, 4500);
+                        _qteSpawnerTimer = setInterval(_spawnQteCross, 8000);
+                    }
+                }
+                showNextBossQuote();
+            }
+        });
+    </script>
+</body>
+</html>
