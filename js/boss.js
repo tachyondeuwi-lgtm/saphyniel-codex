@@ -583,7 +583,7 @@ document.getElementById('core-trigger').addEventListener('pointerdown', (e) => {
         return;
     }
 
-    const dmg = 40;
+    const dmg = 10;
     _bossCurrentHp -= dmg;
 
     const r = e.currentTarget.getBoundingClientRect();
