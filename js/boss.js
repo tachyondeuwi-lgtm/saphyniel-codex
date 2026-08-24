@@ -232,7 +232,7 @@ document.getElementById('core-trigger').addEventListener('pointerdown', (e) => {
         return;
     }
 
-    const dmg = 35;
+    const dmg = 10;
     BossState.currentHp -= dmg;
 
     if (BossState.phase === 3 && !BossState.weaponLost && BossState.currentHp <= 1) {
