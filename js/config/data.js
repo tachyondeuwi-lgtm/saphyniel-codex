@@ -4,26 +4,27 @@ const CODEX_DATA = {
     uniqueVisitsKey: "saphyniel-codex",
 
     sprites: {
-        normalBody: "img/saphyniel_normal.png",
-        angryBody: "img/saphyniel_angry.png",
-        yandereBody: "img/Risayandere.png",
-        divineBossPhase2: "img/boss_fase2.png",
-        bossPhase3: "img/boos_fase3.gif",
-        iconDefault: "img/icon.png",
-        eye: "img/eye.png"
+        normalBody: "img/portraits/saphyniel_normal.png",
+        angryBody: "img/portraits/saphyniel_angry.png",
+        yandereBody: "img/portraits/Risayandere.png",
+        divineBossPhase2: "img/boss/boss_fase2.png",
+        bossPhase3: "img/boss/boos_fase3.gif",
+        iconDefault: "img/icons/icon.png",
+        eye: "img/icons/eye.png"
     },
 
     sounds: {
-        legoPop: "audio/lego.mp3",
-        vineBoom: "audio/boom.mp3",
-        defeatLaugh: "audio/defeatlaught.mp3",
-        bossMusicFase1: "audio/boss-music-fase1.mp3",
-        bossMusicFase2: "audio/boss-music-fase2.mp3",
-        bossMusicFase3: "audio/boss-music-fase3.mp3",
-        superAttack: "audio/superattack.mp3",
-        victory: "audio/victory.mp3",
-        bell: "audio/bell.mp3",
-        rewind: "audio/rewind.mp3"
+        legoPop: "audio/sfx/lego.mp3",
+        vineBoom: "audio/sfx/boom.mp3",
+        defeatLaugh: "audio/sfx/defeatlaught.mp3",
+        bossMusicFase1: "audio/bgm/boss-music-fase1.mp3",
+        bossMusicFase2: "audio/bgm/boss-music-fase2.mp3",
+        bossMusicFase3: "audio/bgm/boss-music-fase3.mp3",
+        superAttack: "audio/sfx/superattack.mp3",
+        victory: "audio/bgm/ending.mp3",
+        bell: "audio/sfx/bell.mp3",
+        rewind: "audio/sfx/rewind.mp3",
+        angelCoro: "audio/sfx/angelcoro.mp3"
     },
 
     danmaku: [
@@ -45,10 +46,10 @@ const CODEX_DATA = {
         attempt1: "Ten cuidado a donde apuntas eso.",
         attempt2: "En serio... no quieres hacer esto.",
         attempt3: "Suficiente.",
-        bossRefused: [
-            "Ya no puedes desafiar al trono...",
-            "El pacto ha sido sellado para siempre.",
-            "Solo tenías una oportunidad mortal."
+        repeatFight: [
+            { text: "¿Quieres hacerlo otra vez? ¿O solo te equivocaste?", tone: "mid" },
+            { text: "Creo que alguien quiere pelear de nuevo...", tone: "low" },
+            { text: "Tú lo pediste.", tone: "angry" }
         ]
     },
 
@@ -56,7 +57,7 @@ const CODEX_DATA = {
         kindred: {
             title: "KINDRED // LOS CAZADORES ETERNOS",
             meta: "CAMPEÓN PRINCIPAL • MAESTRÍA 38 (385K PTS)",
-            splash: "img/kindred.jpg",
+            splash: "img/champions/kindred.jpg",
             role: "JUNGLA / HIPERCARGADOR",
             pts: "385,000 PTS (NVL 38)",
             quote: "«Cordero, ¿es hora? — Es hora.»",
@@ -68,7 +69,7 @@ const CODEX_DATA = {
         shyvana: {
             title: "SHYVANA // LA HIJA DEL DRAGÓN",
             meta: "SEGUNDO CAMPEÓN • MAESTRÍA 22 (216K PTS)",
-            splash: "img/shyvana.jpg",
+            splash: "img/champions/shyvana.jpg",
             role: "JUNGLA / COLOSO",
             pts: "216,000 PTS (NVL 22)",
             quote: "«Furia en mis venas, fuego en el corazón.»",
@@ -80,7 +81,7 @@ const CODEX_DATA = {
         kayle: {
             title: "KAYLE // LA JUSTICIERA",
             meta: "SEGUNDO CAMPEÓN COMPARTIDO • MAESTRÍA 15 (138K PTS)",
-            splash: "img/kayle.jpg",
+            splash: "img/champions/kayle.jpg",
             role: "SUPERIOR / CENTRAL • ESCALADO DIVINO",
             pts: "138,000 PTS (NVL 15)",
             quote: "«El juicio no conoce la piedad.»",

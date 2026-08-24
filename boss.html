@@ -5,20 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SAPHYNIEL // ENCOUNTER</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Press+Start+2P&family=Rajdhani:wght@300;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/subtitles_mv.css">
     <link rel="stylesheet" href="css/boss.css">
 </head>
 <body>
     <div id="bg-camera-container">
         <div class="phase-2-fire"></div>
-        <div class="phase-3-glitch-bg"></div>
-        <div class="phase-3-noise"></div>
+        <div class="phase-3-divine-bg"></div>
+        <div class="phase-3-grid"></div>
         <div class="speed-lines"></div>
     </div>
+
+    <!-- Filtros Cinemáticos -->
+    <div class="cinematic-darkness" id="cinematic-darkness"></div>
+    
+    <!-- Contenedor de Subtítulos Reactivos -->
+    <div id="lyrics-container" class="mv-lyrics-background"></div>
 
     <div class="cinema-bar cinema-top"></div>
     <div class="cinema-bar cinema-bot"></div>
     <div class="anime-impact-frame" id="anime-impact-frame"></div>
+    
+    <!-- Lienzos de Partículas y Flashback -->
     <canvas id="particle-canvas"></canvas>
+    <canvas id="flashback-canvas"></canvas>
+
+    <!-- SILENCIO OVERLAY (Fase 2 Fin) -->
+    <div id="silencio-overlay" class="silencio-overlay">SILENCIO</div>
+
+    <!-- Overlays Plastic Horse y Carton Sword -->
+    <div id="plastic-horse-overlay" class="plastic-horse-overlay"></div>
+    <div id="carton-sword-overlay" class="carton-sword-overlay"></div>
+
+    <!-- Cinemática del Cañón y Textos Épicos Grandes -->
+    <div id="orbital-cannon-drop" class="cinematic-orbital">
+        <img src="img/icons/Orbitalcannon.png" alt="Cannon">
+    </div>
+    <div id="survive-text" class="cinematic-text-blood">TRASCENDENCIA</div>
+    <div id="standup-text" class="cinematic-text-blood">STAND UP</div>
+    <div id="hero-text" class="cinematic-text-blood">HERO</div>
+    <div id="uno-text" class="cinematic-text-blood">UNO</div>
+
+    <!-- Destello de Cuenta Regresiva 1, 2, 3, 4 -->
+    <div class="countdown-flash" id="countdown-flash"></div>
 
     <div class="player-hud" id="player-hud">
         <span class="player-heart" id="heart-1">❤</span>
@@ -28,7 +57,7 @@
 
     <div class="boss-hud-floating" id="boss-hud">
         <div class="boss-header-floating">
-            <img id="boss-hp-eye" class="boss-hp-eye" src="img/eye.png" alt="Eye">
+            <img id="boss-hp-eye" class="boss-hp-eye" src="img/icons/eye.png" alt="Eye">
             <span class="boss-name-text" id="boss-title-name">SAPHYNIEL // DEIDAD TRANSCENDENTE</span>
             <span class="boss-hp-number-text" id="boss-hp-num">[100%]</span>
         </div>
@@ -42,18 +71,17 @@
         </div>
     </div>
 
-    <!-- NÚCLEO Y ESCUDO -->
     <div class="boss-core-container" id="boss-core">
+        <div class="boss-aura-farm" id="boss-aura-farm"></div>
         <div class="boss-shield-aura" id="boss-shield"></div>
         <div class="boss-wings"></div>
         <div class="sacred-wheel-1"></div>
         <div class="sacred-wheel-2"></div>
         <button type="button" class="boss-core-btn" id="core-trigger">
-            <img class="boss-core-img" id="boss-core-img" src="img/icon.png" alt="Core">
+            <img class="boss-core-img" id="boss-core-img" src="img/boss/core.png" alt="Core">
         </button>
     </div>
 
-    <!-- CRISTAL PROTECTOR -->
     <div class="shield-crystal" id="shield-crystal">
         <div class="crystal-hp-bar"><div class="crystal-hp-fill" id="crystal-hp-fill"></div></div>
         <div class="crystal-body">❖</div>
@@ -61,13 +89,14 @@
 
     <!-- OVERLAYS DE FINAL Y CRÉDITOS NIER -->
     <div class="ending-screen" id="ending-screen">
+        <button type="button" class="skip-credits-btn" id="skip-credits-btn">[ SALTAR CRÉDITOS ❯❯ ]</button>
         <div class="ending-title" id="ending-title">GOOD ENDING</div>
         <div class="credits-crawl-viewport" id="credits-viewport">
-            <div class="credits-crawl-track" id="credits-track"></div>
+            <div class="credits-crawl-track nier-credits" id="credits-track"></div>
         </div>
     </div>
 
-    <div class="end-record-final" id="end-record-final">« SAPHYNIEL // END OF RECORD »</div>
+    <div class="end-record-final" id="end-record-final">SAPHYNIEL //</div>
 
     <div class="ending-screen bad-ending-screen" id="game-over-screen">
         <div class="ending-title game-over-title">BAD ENDING</div>
@@ -77,7 +106,7 @@
 
     <!-- P5 DIALOGUE BOX -->
     <div class="p5-dialogue-wrapper" id="p5-box">
-        <img id="p5-cutin-img" class="p5-char-cutin" src="img/cabezanormal.png" alt="Portrait">
+        <img id="p5-cutin-img" class="p5-char-cutin" src="img/portraits/cabezanormal.png" alt="Portrait">
         <div class="p5-name-tag" id="p5-name">SAPHYNIEL</div>
         <div class="p5-speech-bubble">
             <div class="p5-speech-text" id="p5-text"></div>
@@ -88,12 +117,12 @@
         </div>
     </div>
 
-    <!-- ENRAGE OVERLAY FASE 3 -->
-    <div class="enrage-overlay" id="enrage-overlay">
-        <div class="enrage-timer" id="enrage-timer">4.0s</div>
-        <div class="enrage-sub">¡COLAPSO DEL CÓDICE! DESTRUYE LOS SELLOS</div>
-    </div>
-
+    <script src="js/config/subtitles.js"></script>
+    <script src="js/core/audio.js"></script>
+    <script src="js/core/particles.js"></script>
+    <script src="js/core/dialogue.js"></script>
+    <script src="js/boss/boss-attacks.js"></script>
+    <script src="js/boss/boss-flow.js"></script>
     <script src="js/creditos.js"></script>
     <script src="js/boss.js"></script>
 </body>

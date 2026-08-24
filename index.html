@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="img/icon.png">
+    <link rel="icon" type="image/png" href="img/icons/icon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SAPHYNIEL // CODEX</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Press+Start+2P&family=Rajdhani:wght@300;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -19,6 +19,12 @@
     <div class="orbital-ghost-target" id="ghost-target">
         <div class="ghost-core"></div>
     </div>
+    
+    <!-- Cinemática de obtención del Railgun -->
+    <div class="railgun-drop-overlay" id="railgun-drop">
+        <img src="img/icons/Orbitalcannon.png" alt="Railgun">
+    </div>
+
     <div class="combo-counter-hud" id="combo-hud">COMBO x0</div>
 
     <canvas id="particle-canvas"></canvas>
@@ -28,7 +34,7 @@
     <div class="ambient-halo-2"></div>
 
     <div class="p5-dialogue-wrapper" id="p5-box">
-        <img id="p5-cutin-img" class="p5-char-cutin" src="img/saphyniel_normal.png" alt="Portrait">
+        <img id="p5-cutin-img" class="p5-char-cutin" src="img/portraits/saphyniel_normal.png" alt="Portrait">
         <div class="p5-name-tag" id="p5-name">SAPHYNIEL</div>
         <div class="p5-speech-bubble">
             <div class="p5-speech-text" id="p5-text"></div>
@@ -94,7 +100,7 @@
                 <div class="avatar-frame"></div>
                 <div class="avatar-halo"></div>
                 <button type="button" class="avatar-btn" id="avatar-trigger" aria-label="Avatar">
-                    <img id="avatar-img" src="img/saphyniel_normal.png" alt="Avatar" class="avatar">
+                    <img id="avatar-img" src="img/portraits/saphyniel_normal.png" alt="Avatar" class="avatar">
                 </button>
             </div>
             
@@ -113,6 +119,7 @@
             <button class="tab-btn" onclick="_tSw('tab-lol')">[REGISTRO]</button>
             <button class="tab-btn" onclick="_tSw('tab-quotes')">[SALMOS]</button>
             <button class="tab-btn" onclick="_tSw('tab-faq')">[EPÍSTOLAS]</button>
+            <button class="tab-btn" onclick="_tSw('tab-terminal')">[MANDATOS]</button>
         </div>
 
         <div id="tab-links" class="tab-pane active">
@@ -209,7 +216,7 @@
         <div id="tab-lol" class="tab-pane">
             <div class="lol-dossier destructible" id="frag-dossier">
                 <div class="lol-card destructible" id="lol-card-trigger" onclick="_triggerChampInteraction(event)">
-                    <img id="lol-splash-img" src="img/kindred.jpg" alt="Champion" class="lol-card-bg">
+                    <img id="lol-splash-img" src="img/champions/kindred.jpg" alt="Champion" class="lol-card-bg">
                     <div class="lol-card-content">
                         <div class="lol-champ-title" id="lol-champ-title">KINDRED // LOS CAZADORES ETERNOS</div>
                         <div class="lol-champ-meta" id="lol-champ-meta">CAMPEÓN PRINCIPAL • MAESTRÍA 38 (385K PTS)</div>
@@ -257,14 +264,16 @@
             <div class="faq-list" id="faq-container-list"></div>
         </div>
 
-        <div class="terminal-module destructible" id="frag-terminal">
-            <div class="terminal-log" id="terminal-log">
-                <div class="terminal-log-entry sys">[CÓDICE] Registro abierto. Mandatos sagrados en línea.</div>
-                <div class="terminal-log-entry">[INFO] Escribe 'HELP' para mandatos. Pulsa ↑ para repetir.</div>
-            </div>
-            <div class="cmd-box">
-                <span class="cmd-prompt">></span>
-                <input type="text" id="terminal-cmd" class="cmd-input" placeholder="ESCRIBIR MANDATO..." autocomplete="off" spellcheck="false">
+        <div id="tab-terminal" class="tab-pane">
+            <div class="terminal-module destructible" id="frag-terminal">
+                <div class="terminal-log" id="terminal-log">
+                    <div class="terminal-log-entry sys">[CÓDICE] Registro abierto. Mandatos sagrados en línea.</div>
+                    <div class="terminal-log-entry">[INFO] Escribe 'HELP' para ver mandatos. Pulsa ↑ para repetir el último comando.</div>
+                </div>
+                <div class="cmd-box">
+                    <span class="cmd-prompt">></span>
+                    <input type="text" id="terminal-cmd" class="cmd-input" placeholder="ESCRIBIR MANDATO..." autocomplete="off" spellcheck="false">
+                </div>
             </div>
         </div>
 
@@ -276,7 +285,19 @@
         </div>
     </main>
 
-    <script src="js/data.js"></script>
+    <!-- Configuración y Núcleo -->
+    <script src="js/config/data.js"></script>
+    <script src="js/core/audio.js"></script>
+    <script src="js/core/particles.js"></script>
+    <script src="js/core/dialogue.js"></script>
+
+    <!-- Módulos del Hub -->
+    <script src="js/modules/destruction.js"></script>
+    <script src="js/modules/orbital.js"></script>
+    <script src="js/modules/terminal.js"></script>
+    <script src="js/modules/lanyard.js"></script>
+
+    <!-- Script Principal -->
     <script src="js/app.js"></script>
 </body>
 </html>
