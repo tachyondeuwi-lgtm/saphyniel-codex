@@ -104,16 +104,16 @@ const CODEX_DATA = {
 
     faq: [
         {
-            q: "¿QUÉ TIPO DE JUEGOS SUELO JUGAR?",
-            a: "Juegos de rol tácticos, MOBAs competitivos (League of Legends con Kindred, Shyvana y Kayle), títulos de supervivencia con modificaciones y estrategia."
+            q: "¿QUIÉN SOY Y CÓMO ME GUSTA QUE ME LLAMEN?",
+            a: "Soy Saphyniel. Me gusta mantener las cosas a mi propio ritmo, disfrutar de un buen café o té, y sumergirme en universos virtuales que tengan una atmósfera única y envolvente."
         },
         {
-            q: "¿CUÁL ES EL PROPÓSITO DE ESTA PÁGINA?",
-            a: "Un espacio personal sobrio para centralizar enlaces directos, presencia en línea y perfiles."
+            q: "¿QUÉ MUNDOS Y COSAS DISFRUTO EN MI TIEMPO LIBRE?",
+            a: "Me apasiona perderme en historias de fantasía, mundos con lore profundo y estéticas visuales muy cuidadas. Disfruto coleccionar detalles, explorar videojuegos con personalidades fuertes y pasar horas descubriendo música que encaje con mi estado de ánimo."
         },
         {
-            q: "¿CÓMO CONTACTARME?",
-            a: "A través de Discord. Los mensajes directos están habilitados para consultas o juego en equipo."
+            q: "¿CÓMO ES MI ESTILO Y MI MANERA DE SER?",
+            a: "Amo las estéticas oscuras, minimalistas, con toques de elegancia silenciosa y un aire un poco enigmático. Prefiero la tranquilidad, la sinceridad y crear un espacio propio donde pueda ser tal como soy."
         }
     ]
 };
